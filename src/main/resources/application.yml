@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: orderservice_back
+
+server:
+  port: 8181
