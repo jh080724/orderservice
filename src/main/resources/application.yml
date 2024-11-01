@@ -14,3 +14,6 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
+jwt:
+  expiration: 30
+  secretKey: C/dAV3jwYfP6jN8viILkLq7D45fs8jje1wDBaNJNOZeN0/G5iLqPTJJOOzzDSleXpbpmaVHBYWkRtf2eBfQ1Kg==

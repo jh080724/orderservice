@@ -3,6 +3,7 @@ package com.playdata.orderservice.common.dto;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,6 +36,13 @@ public class CommonExceptionHandler {
         e.printStackTrace();
         CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.BAD_REQUEST,"arguments not valid");
         return new ResponseEntity<>(commonErrorDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<CommonErrorDto> validHandler(AccessDeniedException e){
+        e.printStackTrace();
+        CommonErrorDto commonErrorDto = new CommonErrorDto(HttpStatus.UNAUTHORIZED,"arguments not valid");
+        return new ResponseEntity<>(commonErrorDto, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(Exception.class)

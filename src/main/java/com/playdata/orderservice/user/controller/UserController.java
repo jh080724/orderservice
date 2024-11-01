@@ -1,6 +1,9 @@
 package com.playdata.orderservice.user.controller;
 
+import com.playdata.orderservice.common.auth.JwtTokenProvider;
 import com.playdata.orderservice.common.dto.CommonResDto;
+import com.playdata.orderservice.user.dto.UserLoginReqDto;
+import com.playdata.orderservice.user.dto.UserResDto;
 import com.playdata.orderservice.user.dto.UserSaveReqDto;
 import com.playdata.orderservice.user.entity.User;
 import com.playdata.orderservice.user.service.UserService;
@@ -9,10 +12,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -21,9 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     // 컨트롤러는 서비스에 의존한다., Controller -> Service -> Repository -> DB
     private final UserService userService; // 서비스 주입
+    private final JwtTokenProvider jwtTokenProvider; // 토큰 생성 주입
 
     @PostMapping("/create")
-    public ResponseEntity<?> userCreate(@Valid @RequestBody UserSaveReqDto dto){
+    public ResponseEntity<?> userCreate(@Valid @RequestBody UserSaveReqDto dto) {
 
         log.info("userCreate dto: {}", dto);
         User user = userService.userCreate(dto);
@@ -33,4 +38,51 @@ public class UserController {
 
         return new ResponseEntity<>(resDto, HttpStatus.CREATED);
     }
+
+    @PostMapping("/doLogin")
+    public ResponseEntity<?> doLogin(@RequestBody UserLoginReqDto dto) {
+
+        log.info("doLogin 파라미터 UserLoginReqDto: {}", dto);
+
+        User user = userService.login(dto);
+
+
+        // 회원 정보가 일치한다면, JWT를 생성해서 클라이언트에게 발급해주어야 한다.
+        // 로그인 유지를 위해 발급
+        String token = jwtTokenProvider.createToken(user.getEmail(), user.getRole().toString());
+        log.info("token: {}", token);
+
+        // 생성된 토큰 외에 추가로 전달할 정보가 있다면 Map을 사용하는 것이 좋다.
+        Map<String, Object> logInfo = new HashMap<>();
+        logInfo.put("token", token);
+        logInfo.put("id", user.getId());
+
+        // 리턴 Entity -> ResponseEntity<>(resDto)에 포함됨.
+        CommonResDto resDto = new CommonResDto(HttpStatus.OK, "로그인 성공!", logInfo);
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    // 회원정보 조회(관리자) -> ADMIN만 회원목록 전체를 조회할 수 있다.
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/list")
+    public ResponseEntity<?> userList(){
+        log.info("/user/list: GET!!!");
+
+        userService.userList();
+
+
+        return null;
+    }
+
+
+    // 회원정보 조회(마이페이지)
+    @GetMapping("/myinfo")
+    public ResponseEntity<?> myInfo() {
+        UserResDto dto = userService.myinfo();
+        CommonResDto resDto = new CommonResDto(HttpStatus.OK, "myInfo 조회성공!", dto);
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
 }
