@@ -6,12 +6,14 @@ import com.playdata.orderservice.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class UserService {
 
     // 서비스 -> 엔터티 -> 레포지토리 -> DB
@@ -22,6 +24,10 @@ public class UserService {
         if(userRepository.findByEmail(dto.getEmail()).isPresent()){
             throw new IllegalArgumentException("이미 존재하는 이메일 입니다.");
         }
-        return userRepository.save(dto.toEntity(encoder));
+
+        User save = userRepository.save(dto.toEntity(encoder));
+        log.info(save.toString());
+        return save;
+
     }
 }
