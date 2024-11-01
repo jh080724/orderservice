@@ -1,0 +1,34 @@
+package com.playdata.orderservice.user.dto;
+
+import com.playdata.orderservice.common.entity.Address;
+import com.playdata.orderservice.user.entity.User;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@Setter @Getter @ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserSaveReqDto {
+    private String name;
+
+    @NotEmpty(message = "이메일은 필수 입니다.")
+    private String email;
+
+    @NotEmpty(message = "패스워드는 필수 입니다.")
+    @Size(min=0, message = "비밀번호는 최소 8자 이상이어야 합니다.")
+    private String password;
+
+    private Address address;
+
+    public User toEntity(PasswordEncoder encoder){
+        return User.builder()
+                .name(this.name)
+                .email(this.email)
+                .password(encoder.encode(this.password))
+                .address(this.address)
+                .build();
+    }
+}
