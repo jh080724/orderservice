@@ -1,15 +1,19 @@
 package com.playdata.orderservice.product.controller;
 
+import com.playdata.orderservice.common.dto.CommonResDto;
+import com.playdata.orderservice.product.dto.ProductResDto;
 import com.playdata.orderservice.product.dto.ProductSaveReqDto;
+import com.playdata.orderservice.product.entity.Product;
 import com.playdata.orderservice.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/product")
@@ -29,8 +33,27 @@ public class ProductController {
     public ResponseEntity<?> createProduct(@ModelAttribute ProductSaveReqDto dto) {
         log.info("/product/create: POST");
 
-        productService.productCreate(dto);
+        Product product = productService.productCreate(dto);
 
-        return null;
+        CommonResDto resDto
+                = new CommonResDto(HttpStatus.CREATED, "product 등록성공", product.getId());
+
+        return new ResponseEntity<>(resDto, HttpStatus.CREATED);
+
+    }
+
+    @GetMapping("/list")
+    // 페이징이 필요합니다. 리턴은 ProductResDto 형태로 리턴됩니다.
+    // ProductResDto에는 id, name, category, price, stockQuantity, imagePath가 있음.
+    public ResponseEntity<?> listProduct(Pageable pageable) {
+        log.info("/product/list: GET, pageable={}", pageable);
+
+        List<ProductResDto> dtoList = productService.productList(pageable);
+
+        CommonResDto resDto
+                = new CommonResDto(HttpStatus.OK, "상품리스트 정상 조회 완료", dtoList);
+
+        return new ResponseEntity<>(dtoList, HttpStatus.OK);
+
     }
 }

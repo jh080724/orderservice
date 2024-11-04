@@ -1,6 +1,7 @@
 package com.playdata.orderservice.product.entity;
 
 import com.playdata.orderservice.common.entity.BaseTimeEntity;
+import com.playdata.orderservice.product.dto.ProductResDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,17 @@ public class Product extends BaseTimeEntity {
     // 이미지 경로 setter 직접 작성
     public void updateImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public ProductResDto fromEntity(){
+        return ProductResDto.builder()
+                .id(id)
+                .name(name)
+                .category(category)
+                .price(price)
+                .stockQuantity(stockQuantity)
+                .imagePath(imagePath)
+                .build();
     }
 
 }
