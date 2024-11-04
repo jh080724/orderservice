@@ -1,9 +1,11 @@
 package com.playdata.orderservice.ordering.entity;
 
+import com.playdata.orderservice.ordering.dto.OrderingListResDto;
 import com.playdata.orderservice.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter @ToString
@@ -28,4 +30,23 @@ public class Ordering {
     @OneToMany(mappedBy = "ordering", cascade = CascadeType.PERSIST)
     private List<OrderDetail> orderDetails;  // 주문 상세 리스트
 
+    public OrderingListResDto fromEntity(){
+        // DB에서 조회해 온 Ordering에서 상세내역을 확인
+        List<OrderDetail> orderDetailList = this.getOrderDetails();
+        List<OrderingListResDto.OrderDetailDto> orderDetailDtos = new ArrayList<>();
+
+        // OrderDetail 엔터티를 OrderDetailDto로 변환
+        // 변환 후에는 리스트에 추가
+        for (OrderDetail orderDetail : orderDetailList) {
+            orderDetailDtos.add(orderDetail.fromEntity());
+        }
+
+        // 주문 상세내역dto 포장이 완료되면 하나의 주문내역 자체를 dto로 변환해서 리턴.
+        return OrderingListResDto.builder()
+                .id(this.id)
+                .userEmail(this.user.getEmail())
+                .orderStatus(this.orderStatus)
+                .orderDetails(orderDetailDtos)
+                .build();
+    }
 }

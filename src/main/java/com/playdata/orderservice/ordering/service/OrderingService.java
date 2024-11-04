@@ -1,6 +1,7 @@
 package com.playdata.orderservice.ordering.service;
 
 import com.playdata.orderservice.common.auth.TokenUserInfo;
+import com.playdata.orderservice.ordering.dto.OrderingListResDto;
 import com.playdata.orderservice.ordering.dto.OrderingSaveReqDto;
 import com.playdata.orderservice.ordering.entity.OrderDetail;
 import com.playdata.orderservice.ordering.entity.Ordering;
@@ -74,5 +75,47 @@ public class OrderingService {
 
         // Ordering 객체를 save하면 내부에 있는 detail 리스트도 함께 INSERT 진행이 된다.
         return orderingRepository.save(ordering);
+    }
+
+    public void myOrders(TokenUserInfo userInfo) {
+        /*
+        OrderingListResDto -> OrderDetailDto(static 내부 클래스)
+        {
+            id: 주문번호,
+            email: 주문한 사람 email,
+            orderStatus: 주문상태
+            orderDetails: [
+                {
+                    id: 주문상세 번호,
+                    productName: 상품명
+                    count: 수량
+                },
+                {
+                    id: 주문상세 번호,
+                    productName: 상품명
+                    count: 수량
+                },
+                {
+                    id: 주문상세 번호,
+                    productName: 상품명
+                    count: 수량
+                },
+                ...
+            ]
+        }
+         */
+
+        // 사용자 정보 가져오기
+        User user = userRepository.findByEmail(userInfo.getEmail()).orElseThrow(
+                () -> new EntityNotFoundException("User not found")
+        );
+
+        // 사용자가 주문한 주문 내역 가져오기 <- orderingRepository에 메서드 추가
+        List<Ordering> orderingList = orderingRepository.findByUser(user);
+
+        // Ordering 엔터티를 DTO로 변환하자. 주문상세에 대한 변환도 필요함.
+
+
+
     }
 }
