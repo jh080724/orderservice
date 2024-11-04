@@ -23,4 +23,10 @@ public class Product extends BaseTimeEntity {
     private Integer price;
     private Integer stockQuantity;
     private String imagePath;
+
+    // 이미지 경로 setter 직접 작성
+    public void updateImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
 }
