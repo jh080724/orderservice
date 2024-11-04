@@ -1,6 +1,7 @@
 package com.playdata.orderservice.ordering.entity;
 
 import com.playdata.orderservice.ordering.dto.OrderingListResDto;
+import com.playdata.orderservice.user.entity.Role;
 import com.playdata.orderservice.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,7 +25,10 @@ public class Ordering {
     @JoinColumn(name="user_id")
     private User user;  // 누가 주문했는지
 
-    private OrderStatus orderStatus;
+
+    @Enumerated(EnumType.STRING)  // 상수이름을 스트링으로 DB에 저장
+    @Builder.Default    // Builder로 build시에 초기화된 값으로 세팅하기 위한 어노테이션
+    private OrderStatus orderStatus = OrderStatus.ORDERED;
 
     // mappedBy: 없는 타입 필드 맴핑
     @OneToMany(mappedBy = "ordering", cascade = CascadeType.PERSIST)
@@ -48,5 +52,9 @@ public class Ordering {
                 .orderStatus(this.orderStatus)
                 .orderDetails(orderDetailDtos)
                 .build();
+    }
+
+    public void updateStatus(OrderStatus status){
+        this.orderStatus = status;
     }
 }

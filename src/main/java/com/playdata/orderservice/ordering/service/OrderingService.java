@@ -4,6 +4,7 @@ import com.playdata.orderservice.common.auth.TokenUserInfo;
 import com.playdata.orderservice.ordering.dto.OrderingListResDto;
 import com.playdata.orderservice.ordering.dto.OrderingSaveReqDto;
 import com.playdata.orderservice.ordering.entity.OrderDetail;
+import com.playdata.orderservice.ordering.entity.OrderStatus;
 import com.playdata.orderservice.ordering.entity.Ordering;
 import com.playdata.orderservice.ordering.repository.OrderingRepository;
 import com.playdata.orderservice.product.entity.Product;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -77,7 +79,7 @@ public class OrderingService {
         return orderingRepository.save(ordering);
     }
 
-    public void myOrders(TokenUserInfo userInfo) {
+    public List<OrderingListResDto> myOrders(TokenUserInfo userInfo) {
         /*
         OrderingListResDto -> OrderDetailDto(static 내부 클래스)
         {
@@ -114,8 +116,33 @@ public class OrderingService {
         List<Ordering> orderingList = orderingRepository.findByUser(user);
 
         // Ordering 엔터티를 DTO로 변환하자. 주문상세에 대한 변환도 필요함.
+        List<OrderingListResDto> dtos = orderingList.stream()
+                .map(order -> order.fromEntity())
+                .collect(Collectors.toList());
 
+        return dtos;
 
+    }
 
+    public List<OrderingListResDto> orderList() {
+        List<Ordering> orderList = orderingRepository.findAll();
+
+        List<OrderingListResDto> dtos = orderList.stream()
+                .map(order -> order.fromEntity())
+                .collect(Collectors.toList());
+
+        return dtos;
+    }
+
+    public Ordering orderCancel(Long id) {
+        // 상태를 CANCEL로 변경해 주세요.
+        // 클라이언트에게는 변경상태와 주문 id만 넘겨주세요.
+        Ordering ordering = orderingRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("주문이 없는데...")
+        );
+
+        ordering.updateStatus(OrderStatus.CANCELED);  // 더티체킹(save를 하지 않아도 변경을 감지한다.)
+
+        return ordering;
     }
 }
