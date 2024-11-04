@@ -11,13 +11,16 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Pageable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class UserService {
     // 서비스 -> 엔터티 -> 레포지토리 -> DB
     private final UserRepository userRepository; // @RequiredArgsConstructor에 의해 Repository 주입
     private final PasswordEncoder encoder;
+    private final PageableHandlerMethodArgumentResolver pageableResolver;
 
     public User userCreate(@Valid UserSaveReqDto dto) {
         if(userRepository.findByEmail(dto.getEmail()).isPresent()){
@@ -68,16 +72,25 @@ public class UserService {
 
     }
 
-    public void userList() {
+    public List<UserResDto> userList(Pageable pageable) {
         // UserResDto가 여러개 리턴되어야 함.
-        List<User> userList = userRepository.findAll();
-
         // 페이징 처리해 주세요. 1페이지 요청, 한화면에 보여줄 회원수: 6명
-        Pageable pageable = PageRequest.of(userList, 6);
 
-        log.info(pageable.toString());
+//        Pageable pageable = PageRequest.of(0, 6);  --> 필요없어짐. Controller에서 넘겨줌
+        Page<User> users = userRepository.findAll(pageable);
 
+        // 실질적 데이터(userList)
+        List<User> content = users.getContent();
+        List<UserResDto> dtoList = content.stream().map(user -> user.fromEntity())
+                .collect(Collectors.toList());
 
+        // 총 페이지 수
+        int totalPages = users.getTotalPages();
+
+        // 총 데이터 수
+        long total = users.getTotalElements();
+
+        return dtoList;
 
     }
 }

@@ -10,12 +10,14 @@ import com.playdata.orderservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -66,13 +68,18 @@ public class UserController {
     // 회원정보 조회(관리자) -> ADMIN만 회원목록 전체를 조회할 수 있다.
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
-    public ResponseEntity<?> userList(){
+    // 컨트롤러 파라미터로 Pageable 선언하면, 페이징 파리미터 처리를 쉽게 진행할 수 있음.
+    // list?number=1&size-10&sort=name,desc 와 같이 사용하면 됨.
+    // 요청시 쿼리 스트링이 전달되지 않으면, 기본값(0, 20, unsorted)으로 처리됨.
+    public ResponseEntity<?> userList(Pageable pageable) {
         log.info("/user/list: GET!!!");
+        log.info("pageable: {}", pageable);
 
-        userService.userList();
+        List<UserResDto> userResDtos = userService.userList(pageable);
 
+        CommonResDto resDto = new CommonResDto(HttpStatus.OK, "userList 조회 성공", userResDtos);
 
-        return null;
+        return ResponseEntity.ok().body(resDto);
     }
 
 
