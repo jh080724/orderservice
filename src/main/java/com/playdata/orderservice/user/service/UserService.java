@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -92,5 +91,11 @@ public class UserService {
 
         return dtoList;
 
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id).orElseThrow(
+                ()-> new EntityNotFoundException("User Not Found")
+        );
     }
 }

@@ -36,7 +36,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> {
             auth
 //                    .requestMatchers("/user/list").hasAnyRole("ADMIN")
-                    .requestMatchers("/user/create", "/user/doLogin").permitAll()  //회원가입은 허용하고, 나머지는 요청은 인증을 거치겠다.
+                    .requestMatchers("/user/create", "/user/doLogin", "/user/refresh").permitAll()  //회원가입은 허용하고, 나머지는 요청은 인증을 거치겠다.
                     .anyRequest().authenticated();
                 })
                 // 커스텀 필터를 등록.

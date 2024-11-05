@@ -1,6 +1,7 @@
 package com.playdata.orderservice.user.controller;
 
 import com.playdata.orderservice.common.auth.JwtTokenProvider;
+import com.playdata.orderservice.common.dto.CommonErrorDto;
 import com.playdata.orderservice.common.dto.CommonResDto;
 import com.playdata.orderservice.user.dto.UserLoginReqDto;
 import com.playdata.orderservice.user.dto.UserResDto;
@@ -69,7 +70,7 @@ public class UserController {
                 = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getRole().toString());
 
         // refresh token을 DB에 저장 수행 --> redis에 저장
-        redisTemplate.opsForValue().set(user.getEmail(), refreshToken, 240, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set(user.getEmail(), refreshToken, 240, TimeUnit.MINUTES);
 
 
         // 생성된 토큰 외에 추가로 전달할 정보가 있다면 Map을 사용하는 것이 좋다.
@@ -106,6 +107,31 @@ public class UserController {
     public ResponseEntity<?> myInfo() {
         UserResDto dto = userService.myinfo();
         CommonResDto resDto = new CommonResDto(HttpStatus.OK, "myInfo 조회성공!", dto);
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    // access_token이 만료되어 새 토큰을 요청
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestBody String id) {
+
+        User user = userService.findById(Long.parseLong(id));
+
+        // email로 redis를 조회해서 refresh token을 가져오자.
+        Object obj = redisTemplate.opsForValue().get(user.getEmail());
+        if (obj == null) {  // refresh_token의 수명이 다됨.
+            return new ResponseEntity<>(new CommonErrorDto(
+                    HttpStatus.UNAUTHORIZED, "Refresh_Token 만료됨!, 로그인 필요!"
+            ), HttpStatus.UNAUTHORIZED);
+        }
+
+        // 새로운 access_tonek을 발급하자.
+        String newAccessToken
+                = jwtTokenProvider.createToken(user.getEmail(), user.getRole().toString());
+
+        Map<String, Object> info = new HashMap<>();
+        info.put("token", newAccessToken);
+        CommonResDto resDto = new CommonResDto(HttpStatus.OK, "새 토크 발급됨.", info);
 
         return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
