@@ -10,7 +10,9 @@ import com.playdata.orderservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/user")
@@ -28,6 +31,9 @@ public class UserController {
     // 컨트롤러는 서비스에 의존한다., Controller -> Service -> Repository -> DB
     private final UserService userService; // 서비스 주입
     private final JwtTokenProvider jwtTokenProvider; // 토큰 생성 주입
+
+    @Qualifier("user-template") // RedisTemplate이 여러개 빈 등록 되었을 경우 명시한다.
+    private final RedisTemplate<String, Object> redisTemplate; // Redis 주입
 
     @PostMapping("/create")
     public ResponseEntity<?> userCreate(@Valid @RequestBody UserSaveReqDto dto) {
@@ -63,6 +69,7 @@ public class UserController {
                 = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getRole().toString());
 
         // refresh token을 DB에 저장 수행 --> redis에 저장
+        redisTemplate.opsForValue().set(user.getEmail(), refreshToken, 240, TimeUnit.HOURS);
 
 
         // 생성된 토큰 외에 추가로 전달할 정보가 있다면 Map을 사용하는 것이 좋다.
