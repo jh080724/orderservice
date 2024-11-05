@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -27,6 +28,7 @@ public class SecurityConfig {
         // 스프링 시큐리티에서 기본으로 제공하는 CSRF 토큰 공격을 방지하기 위한 장치 해제.
         // CSRF(Cross Site Request Forgery) 사이트 간 요청 위조
         http.csrf(csrfConfig -> csrfConfig.disable());
+        http.cors(Customizer.withDefaults());
 
         // 세션 관리 상태를 사용하지 않고
         // STATELESS 한 토큰을 사용하겠다.
@@ -36,7 +38,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> {
             auth
 //                    .requestMatchers("/user/list").hasAnyRole("ADMIN")
-                    .requestMatchers("/user/create", "/user/doLogin", "/user/refresh").permitAll()  //회원가입은 허용하고, 나머지는 요청은 인증을 거치겠다.
+                    .requestMatchers("/user/create", "/user/doLogin", "/user/refresh", "/product/list").permitAll()  //회원가입은 허용하고, 나머지는 요청은 인증을 거치겠다.
                     .anyRequest().authenticated();
                 })
                 // 커스텀 필터를 등록.

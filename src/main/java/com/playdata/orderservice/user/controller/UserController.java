@@ -79,7 +79,8 @@ public class UserController {
         logInfo.put("id", user.getId());
 
         // 리턴 Entity -> ResponseEntity<>(resDto)에 포함됨.
-        CommonResDto resDto = new CommonResDto(HttpStatus.OK, "로그인 성공!", logInfo);
+        CommonResDto resDto
+                = new CommonResDto(HttpStatus.OK, "로그인 성공!", logInfo);
 
         return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
