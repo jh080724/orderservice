@@ -70,7 +70,7 @@ public class UserController {
                 = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getRole().toString());
 
         // refresh token을 DB에 저장 수행 --> redis에 저장
-        redisTemplate.opsForValue().set(user.getEmail(), refreshToken, 240, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(user.getEmail(), refreshToken, 2, TimeUnit.MINUTES);
 
 
         // 생성된 토큰 외에 추가로 전달할 정보가 있다면 Map을 사용하는 것이 좋다.
@@ -89,7 +89,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
     // 컨트롤러 파라미터로 Pageable 선언하면, 페이징 파리미터 처리를 쉽게 진행할 수 있음.
-    // list?number=1&size-10&sort=name,desc 와 같이 사용하면 됨.
+    // list?number=1&size=10&sort=name,desc 와 같이 사용하면 됨.
     // 요청시 쿼리 스트링이 전달되지 않으면, 기본값(0, 20, unsorted)으로 처리됨.
     public ResponseEntity<?> userList(Pageable pageable) {
         log.info("/user/list: GET!!!");
@@ -114,12 +114,15 @@ public class UserController {
 
     // access_token이 만료되어 새 토큰을 요청
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody String id) {
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> id) {
 
-        User user = userService.findById(Long.parseLong(id));
+        log.info("/user/refresh: POST, id: {}", id);
+        User user = userService.findById(Long.parseLong(id.get("id")));
+        log.info("조회된 user: {}", user);
 
         // email로 redis를 조회해서 refresh token을 가져오자.
         Object obj = redisTemplate.opsForValue().get(user.getEmail());
+        log.info("redis obj: {}", obj);
         if (obj == null) {  // refresh_token의 수명이 다됨.
             return new ResponseEntity<>(new CommonErrorDto(
                     HttpStatus.UNAUTHORIZED, "Refresh_Token 만료됨!, 로그인 필요!"

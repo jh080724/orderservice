@@ -53,7 +53,7 @@ public class ProductController {
         CommonResDto resDto
                 = new CommonResDto(HttpStatus.OK, "상품리스트 정상 조회 완료", dtoList);
 
-        return new ResponseEntity<>(dtoList, HttpStatus.OK);
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
 
     }
 }
