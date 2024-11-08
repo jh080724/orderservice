@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface OrderingRepository extends JpaRepository<Ordering, Long> {
 
-//    @Query("SELECT o FROM Ordering o WHERE o.user = ?1")
-    List<Ordering> findByUser(User user); // Join 컬럼이 user_id로 조회해줌.
+    List<Ordering> findByUser(User user);
 
 }
+

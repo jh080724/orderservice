@@ -1,6 +1,5 @@
 package com.playdata.orderservice.user.dto;
 
-
 import com.playdata.orderservice.common.entity.Address;
 import com.playdata.orderservice.user.entity.Role;
 import lombok.*;
@@ -20,4 +19,19 @@ public class UserResDto {
     private Address address;
 
 
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

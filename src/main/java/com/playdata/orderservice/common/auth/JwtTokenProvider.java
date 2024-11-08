@@ -12,12 +12,11 @@ import java.util.Date;
 
 @Component
 @Slf4j
-// 역할: JWT 토큰을 발급하고, 서명 위조를 검사하는 객체
+// 역할: 토큰을 발급하고, 서명 위조를 검사하는 객체
 public class JwtTokenProvider {
 
-    // 서명에 사용할 값(512비트 이상의 랜덤 문자열을 권장)
-    // 토큰 위조를 확인할 때 사용하는 서명 값
-    // yml 파일이도 property 방식을 써야함.
+    // 서명에 사용할 값 (512비트 이상의 랜덤 문자열을 권장)
+    // yml에 있는 값 땡겨오기 (properties 방식으로 선언)
     @Value("${jwt.secretKey}")
     private String secretKey;
 
@@ -25,7 +24,7 @@ public class JwtTokenProvider {
     private int expiration;
 
     @Value("${jwt.secretKeyRt}")
-    private String secretKeyRt;
+    private String secreKeyRt;
 
     @Value("${jwt.expirationRt}")
     private int expirationRt;
@@ -42,49 +41,37 @@ public class JwtTokenProvider {
                 ...
                 == 서명
             }
-
-            클래임(Claims).
-            - `iss` (Issuer): 토큰 발행자를 나타냅니다.
-            - `exp` (Expiration Time): 토큰의 만료 시간을 나타냅니다.
-            - `sub` (Subject): 토큰의 주제를 나타냅니다.
-            - `aud` (Audience): 토큰이 전달되는 대상을 나타냅니다.
-            - `nbf` (Not Before): 토큰이 활성화되기 전 시간을 나타냅니다.
-            - `iat` (Issued At): 토큰이 발행된 시간을 나타냅니다.
-            - `jti` (JWT ID): 토큰을 구별하는 고유한 식별자를 나타냅니다.
      */
     public String createToken(String email, String role) {
-
-        // 페이로드에 들어갈 사용자 정보를 클래임이라 한다.
-        // Calims: 페이로드에 들어갈 사용자 정보
+        // Claims: 페이로드에 들어갈 사용자 정보
         Claims claims = Jwts.claims().setSubject(email);
         claims.put("role", role);
-        Date date = new Date();  // 만료시간 지정
+        Date date = new Date();
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(date)
-                // 현재 시간 밀리초에 30분을 더한 시간을 만료시간으로 세팅
+                //현재 시간 밀리초에 30분을 더한 시간을 만료시간으로 세팅
                 .setExpiration(new Date(date.getTime() + expiration * 60 * 1000L))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 
     public String createRefreshToken(String email, String role) {
-
-        // 페이로드에 들어갈 사용자 정보를 클래임이라 한다.
-        // Calims: 페이로드에 들어갈 사용자 정보
+        // Claims: 페이로드에 들어갈 사용자 정보
         Claims claims = Jwts.claims().setSubject(email);
         claims.put("role", role);
-        Date date = new Date();  // 만료시간 지정
+        Date date = new Date();
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(date)
-                // 현재 시간 밀리초에 30분을 더한 시간을 만료시간으로 세팅
+                //현재 시간 밀리초에 30분을 더한 시간을 만료시간으로 세팅
                 .setExpiration(new Date(date.getTime() + expirationRt * 60 * 1000L))
-                .signWith(SignatureAlgorithm.HS256, secretKeyRt)
+                .signWith(SignatureAlgorithm.HS256, secreKeyRt)
                 .compact();
     }
+
 
     /**
      * 클라이언트가 전송한 토큰을 디코딩하여 토큰의 위조 여부를 확인
@@ -95,21 +82,41 @@ public class JwtTokenProvider {
      */
     public TokenUserInfo validateAndGetTokenUserInfo(String token) throws Exception {
         Claims claims = Jwts.parserBuilder()
-                // 토큰 발급자의 발급 당시의 서명을 넣어줌. applicaiton.yml 설정이 있는 값
+                // 토큰 발급자의 발급 당시의 서명을 넣어줌.
                 .setSigningKey(secretKey)
-                // 서명 위조 검사: 위조된 경우에는 예외가 발생
-                // 만약 위조되지 않았다면 payload를 리턴
+                // 서명 위조 검사: 위조된 경우에는 예외가 발생합니다.
+                // 위조되지 않았다면 payload를 리턴.
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
 
-        log.info("validateAndGetTokenUserInfo() claims: {}", claims);
+        log.info("claims : {}", claims);
 
         return TokenUserInfo.builder()
                 .email(claims.getSubject())
                 // 클레임이 get 할 수 있는 타입이 정해져 있어서 Role을 못 꺼냅니다.
-                // 일단 STring으로 꺼내고, 다시 Role 타입으로 포장해서 집어 넣겠습니다.
+                // 일단 String으로 꺼내고, 다시 Role 타입으로 포장해서 집어 넣겠습니다.
                 .role(Role.valueOf(claims.get("role", String.class)))
                 .build();
+
+
+
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

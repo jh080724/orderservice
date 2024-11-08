@@ -6,11 +6,10 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
-@Getter
-@Setter
-@ToString
+@Getter @Setter @ToString
 @NoArgsConstructor
 public class CommonResDto {
+
     private int statusCode;
     private String statusMessage;
     private Object result;

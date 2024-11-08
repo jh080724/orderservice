@@ -8,11 +8,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter @NoArgsConstructor @AllArgsConstructor
+
+@Getter @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "tbl_user")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,20 +23,23 @@ public class User {
     @Column(length = 20, nullable = false)
     private String name;
 
-    @Column(unique = true, length = 20, nullable = false)
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
-    @Embedded   // @Embeddable로 선언된 값을 대입(기본 생성자 필수, @NoArg... 있어야함.)
+    @Embedded // @Embeddable로 선언된 값 대입 (기본 생성자 필수)
     private Address address;
 
-    @Enumerated(EnumType.STRING)  // 상수이름을 스트링으로 DB에 저장
-    @Builder.Default    // Builder로 build시에 초기화된 값으로 세팅하기 위한 어노테이션
+    @Enumerated(EnumType.STRING)
+    @Builder.Default // build시 초기화된 값으로 세팅하기 위한 아노테이션
     private Role role = Role.USER;
 
-    public UserResDto fromEntity(){
+    private String refreshToken;
+
+
+    public UserResDto fromEntity() {
         return UserResDto.builder()
                 .id(id)
                 .name(name)
@@ -42,4 +48,21 @@ public class User {
                 .address(address)
                 .build();
     }
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

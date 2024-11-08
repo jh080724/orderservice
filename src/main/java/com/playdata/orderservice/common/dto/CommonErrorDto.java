@@ -6,11 +6,11 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
-@Getter
-@Setter
+@Getter @Setter
 @ToString
 @NoArgsConstructor
 public class CommonErrorDto {
+
     private int statusCode;
     private String statusMessage;
 
@@ -18,4 +18,6 @@ public class CommonErrorDto {
         this.statusCode = httpStatus.value();
         this.statusMessage = statusMessage;
     }
+
+
 }

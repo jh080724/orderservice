@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "tbl_product")
 public class Product extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,12 +33,13 @@ public class Product extends BaseTimeEntity {
         this.imagePath = imagePath;
     }
 
-    // 재고 수량 setter 직접작성
+    // 재고 수량 setter 직접 작성
     public void updateStockQuantity(Integer stockQuantity) {
         this.stockQuantity = this.stockQuantity - stockQuantity;
     }
 
-    public ProductResDto fromEntity(){
+
+    public ProductResDto fromEntity() {
         return ProductResDto.builder()
                 .id(id)
                 .name(name)
@@ -46,4 +50,19 @@ public class Product extends BaseTimeEntity {
                 .build();
     }
 
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

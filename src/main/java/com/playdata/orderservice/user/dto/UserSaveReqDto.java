@@ -12,18 +12,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @AllArgsConstructor
 @Builder
 public class UserSaveReqDto {
+
     private String name;
 
-    @NotEmpty(message = "이메일은 필수 입니다.")
+    @NotEmpty(message = "이메일은 필수입니다!")
     private String email;
 
-    @NotEmpty(message = "패스워드는 필수 입니다.")
-    @Size(min=0, message = "비밀번호는 최소 8자 이상이어야 합니다.")
+    @NotEmpty(message = "비밀번호는 필수입니다!")
+    @Size(min = 8, message = "비밀번호는 최소 8자 이상이어야 합니다!")
     private String password;
 
     private Address address;
 
-    public User toEntity(PasswordEncoder encoder){
+
+    public User toEntity(PasswordEncoder encoder) {
         return User.builder()
                 .name(this.name)
                 .email(this.email)
@@ -31,4 +33,17 @@ public class UserSaveReqDto {
                 .address(this.address)
                 .build();
     }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
