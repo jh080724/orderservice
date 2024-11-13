@@ -1,5 +1,6 @@
 package com.playdata.orderservice.product.service;
 
+import com.playdata.orderservice.common.configs.AwsS3Config;
 import com.playdata.orderservice.product.dto.ProductResDto;
 import com.playdata.orderservice.product.dto.ProductSaveReqDto;
 import com.playdata.orderservice.product.dto.ProductSearchDto;
@@ -32,14 +33,16 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final JPAQueryFactory factory;
+    private final AwsS3Config s3Config;
 
-    public Product productCreate(ProductSaveReqDto dto) {
+    public Product productCreate(ProductSaveReqDto dto) throws IOException {
 
         MultipartFile productImage = dto.getProductImage();
 
         String uniqueFileName
                 = UUID.randomUUID() + "_" + productImage.getOriginalFilename();
 
+        /* 로컬 저장 코드
         File file
                 = new File("/Users/stephen/Desktop/develop/upload/" + uniqueFileName);
         try {
@@ -47,9 +50,14 @@ public class ProductService {
         } catch (IOException e) {
             throw new RuntimeException("이미지 저장 실패!");
         }
+        */
+
+        // 더 이상 로컬 경로에 이미지를 저장하지 않고, S3 버킷에 저장
+        String imageUrl
+                = s3Config.uploadToS3Bucket(productImage.getBytes(), uniqueFileName);
 
         Product product = dto.toEntity();
-        product.updateImagePath(uniqueFileName);
+        product.updateImagePath(imageUrl);  // 파일명이 아닌 S3 오브젝트의 url이 저장될 것이다.
 
         return productRepository.save(product);
 
@@ -66,13 +74,13 @@ public class ProductService {
         BooleanBuilder builder = new BooleanBuilder();
 
         // 상품 이름 검색 조건
-        if(searchDto.getSearchName() != null){
+        if (searchDto.getSearchName() != null) {
             // 상품 이름 검색 조건
-            if(searchDto.getCategory().equals("name")){
-                builder.and(product.name.like("%"+searchDto.getSearchName()+"%"));
-            // 상품 카테고리 검색 조건
-            } else if(searchDto.getCategory().equals("category")){
-                builder.and(product.category.like("%"+searchDto.getSearchName()+"%"));
+            if (searchDto.getCategory().equals("name")) {
+                builder.and(product.name.like("%" + searchDto.getSearchName() + "%"));
+                // 상품 카테고리 검색 조건
+            } else if (searchDto.getCategory().equals("category")) {
+                builder.and(product.category.like("%" + searchDto.getSearchName() + "%"));
             }
         }
 
@@ -83,7 +91,7 @@ public class ProductService {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-        
+
         // 총 검색 결과수를 구하는 쿼리
         long total = factory
                 .selectFrom(product)
@@ -95,7 +103,7 @@ public class ProductService {
                 = new PageImpl<>(products, pageable, total);
 
         // 엔터티를 일괄적으로 dto로 변환하기
-        Page<ProductResDto> productResDtos 
+        Page<ProductResDto> productResDtos
                 = productPage.map(p -> p.fromEntity());
 
 

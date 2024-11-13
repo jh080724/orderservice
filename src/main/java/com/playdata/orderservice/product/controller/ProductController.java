@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -30,7 +31,7 @@ public class ProductController {
     // 요청과 함께 이미지가 전달이 될 것이다. 해당 이미지를 처리하는 방식이 두 가지로 나뉜다.
     // 1. JS의 FormData 객체를 통해 모든 데이터를 전달. (multipart/form-data 형식으로 전달, form 태그 x)
     // 2. JSON 형태로 전달 (이미지를 Base64 인코딩을 통해 문자열로 변환해서 전달)
-    public ResponseEntity<?> createProduct(ProductSaveReqDto dto) {
+    public ResponseEntity<?> createProduct(ProductSaveReqDto dto) throws IOException {
 
         log.info("/product/create: POST");
         Product product = productService.productCreate(dto);
