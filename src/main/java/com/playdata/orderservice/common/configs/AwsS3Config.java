@@ -9,7 +9,12 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 
 // AWS에 연결해서 S3에 관련된 서비를 실행하는 전용 객체
 @Component
@@ -48,11 +53,12 @@ public class AwsS3Config {
 
     /**
      * 버킷에 파일을 업로드하고, 업로드한 버킷의 url 정보를 리턴
+     *
      * @param uploadFile - 업로드 할 파일의 실제 raw 데이터, 버킷에 쏠때 Byte로 보내야함.
-     * @param fileName - 업로드 할 파일명
+     * @param fileName   - 업로드 할 파일명
      * @return - 버킷에 업로드 된 버킷 경로(url)
      */
-    public String uploadToS3Bucket(byte[] uploadFile, String fileName){
+    public String uploadToS3Bucket(byte[] uploadFile, String fileName) {
         // 업로드할 파일을 S3 오브젝트로 생성.
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -66,6 +72,29 @@ public class AwsS3Config {
         return s3Client.utilities()
                 .getUrl(b -> b.bucket(bucketName).key(fileName))
                 .toString();
+    }
+
+    // 버킷에 업로드 된 이미지를 삭제하는 로직
+    // 버킷에 오브젝트를 지우기 위해서는 키값을 줘야 하는데,
+    // DB에 저장되어 있는 건 키가 아니라 URL 임.
+    // 원본: https://ordersvc-img0807.s3.ap-northeast-2.amazonaws.com/82064e07-5c49-4606-b517-0edc43774b1d_add-250x140.jpg
+    // 결과: 82064e07-5c49-4606-b517-0edc43774b1d_add-250x140.jpg
+    public void deleteFromS3Bucket(String fileName) throws Exception {
+        log.info("Deleting file {}", fileName);
+
+        URL url = new URL(fileName);
+
+        // getPath()를 통해 Key 값 앞에 "/"까지 포함해서 제거.
+        // 파일명에 한글이 포함되어 있을 경우, UTF-8 decoding 적용
+        String decodingKey = URLDecoder.decode(url.getPath(), "UTF-8");
+        String key = decodingKey.substring(1);
+        log.info("Deleting key {}", key);
+
+        DeleteObjectRequest request = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+        s3Client.deleteObject(request);
     }
 
 }

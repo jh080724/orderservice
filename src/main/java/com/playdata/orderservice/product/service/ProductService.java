@@ -9,6 +9,7 @@ import com.playdata.orderservice.product.entity.QProduct;
 import com.playdata.orderservice.product.repository.ProductRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -108,6 +110,16 @@ public class ProductService {
 
 
         return productResDtos;
+    }
+
+    public void productDelete(Long id) throws Exception {
+        Product product = productRepository.findById(id).orElseThrow(
+                () -> new EntityNotFoundException("Product with id " + id + " not found")
+        );
+
+        String imageUrl = product.getImagePath();  // S3 버킷 내의 오브젝트 Url
+        s3Config.deleteFromS3Bucket(imageUrl);
+        productRepository.deleteById(id);
     }
 }
 

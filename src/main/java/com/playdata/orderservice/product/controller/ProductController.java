@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 
 @RestController
@@ -60,6 +61,19 @@ public class ProductController {
     }
 
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> productDelete(@RequestParam Long id) throws Exception {
+        log.info("/product/delete: DELETE, id: {}", id);
+
+        productService.productDelete(id);
+
+        CommonResDto resDto
+                = new CommonResDto(HttpStatus.OK, "삭제 완료", null);
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+
+    }
 
 }
 
