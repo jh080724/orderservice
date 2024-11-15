@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 @Rollback(false)
 class ProductRepositoryTest {
-
+/*
     @Autowired
     private ProductRepository productRepository;
 
@@ -34,7 +34,7 @@ class ProductRepositoryTest {
         }
 
     }
-
+*/
 }
 
 

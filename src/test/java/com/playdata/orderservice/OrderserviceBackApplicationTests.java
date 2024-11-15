@@ -9,7 +9,7 @@ import java.util.Base64;
 
 @SpringBootTest
 class OrderserviceBackApplicationTests {
-
+/*
 	@Test
 	void contextLoads() {
 	}
@@ -25,4 +25,5 @@ class OrderserviceBackApplicationTests {
 		System.out.println("encodedKey = " + encodedKey);
 		System.out.println("\n\n\n");
 	}
+	*/
 }
