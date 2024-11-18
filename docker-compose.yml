@@ -1,6 +1,7 @@
 services:
-  app:
-    build: .
+  backend:
+#    build: .  # Dockerfile이 존재하는 위치. 로컬세팅
+    image: jh080724/order-service:latest # docker hub에 push한 이미지 이름
     ports:
       - "80:80"
     environment:
