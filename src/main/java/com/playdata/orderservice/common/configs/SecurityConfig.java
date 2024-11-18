@@ -42,7 +42,7 @@ public class SecurityConfig {
             auth
 //                    .requestMatchers("/user/list").hasAnyRole("ADMIN")
                     .requestMatchers("/user/create", "/user/doLogin",
-                            "/user/refresh", "/product/list").permitAll()
+                            "/user/refresh", "/product/list", "/").permitAll()
                     .anyRequest().authenticated();
         })
                 // 커스텀 필터를 등록.
